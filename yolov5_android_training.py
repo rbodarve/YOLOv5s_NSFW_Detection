@@ -139,71 +139,173 @@ def validate_dataset_structure():
             print(f"✓ Found: {path}")
     
     # Check for images and labels
-    train_images = len(os.listdir('Thesis/dataset/images/train'))
-    val_images = len(os.listdir('Thesis/dataset/images/val'))
-    train_labels = len(os.listdir('Thesis/dataset/labels/train'))
-    val_labels = len(os.listdir('Thesis/dataset/labels/val'))
+    train_images = len([f for f in os.listdir('Thesis/dataset/images/train') if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp'))])
+    val_images = len([f for f in os.listdir('Thesis/dataset/images/val') if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp'))])
+    train_labels = len([f for f in os.listdir('Thesis/dataset/labels/train') if f.endswith('.txt')])
+    val_labels = len([f for f in os.listdir('Thesis/dataset/labels/val') if f.endswith('.txt')])
     
     print(f"Training images: {train_images}, Training labels: {train_labels}")
     print(f"Validation images: {val_images}, Validation labels: {val_labels}")
     
     if train_images == 0 or val_images == 0:
         print("⚠️ Warning: No images found in dataset folders")
-        print("Please add your images and labels before training")
+        print("Will use preexisting YOLOv5 dataset for training")
         return False
     
     return True
 
-def create_sample_data():
-    """Create sample data for demonstration purposes"""
-    print("Creating sample dataset for demonstration...")
+def setup_preexisting_dataset():
+    """Setup a preexisting YOLOv5 dataset when local dataset is empty"""
+    print("Setting up preexisting YOLOv5 dataset...")
     
-    # Create sample images (blank images with different colors)
-    sample_data = [
-        ('train', 10),
-        ('val', 3)
-    ]
+    # Available preexisting datasets in YOLOv5
+    available_datasets = {
+        'coco128': {
+            'url': 'https://ultralytics.com/assets/coco128.zip',
+            'nc': 80,
+            'description': 'COCO dataset subset (128 images, 80 classes)'
+        },
+        'voc': {
+            'yaml': 'VOC.yaml',
+            'nc': 20,
+            'description': 'Pascal VOC dataset (20 classes)'
+        },
+        'Objects365': {
+            'yaml': 'Objects365.yaml', 
+            'nc': 365,
+            'description': 'Objects365 dataset (365 classes)'
+        }
+    }
     
-    for split, count in sample_data:
-        for i in range(count):
-            # Create sample image
-            img = np.random.randint(0, 255, (640, 640, 3), dtype=np.uint8)
-            img_path = f'Thesis/dataset/images/{split}/sample_{i:03d}.jpg'
-            cv2.imwrite(img_path, img)
+    # Use COCO128 as default (smaller, faster for demo)
+    selected_dataset = 'coco128'
+    print(f"Selected dataset: {selected_dataset} - {available_datasets[selected_dataset]['description']}")
+    
+    if selected_dataset == 'coco128':
+        # Download and extract COCO128 dataset
+        import zipfile
+        import urllib.request
+        from urllib.parse import urlparse
+        
+        dataset_url = available_datasets[selected_dataset]['url']
+        dataset_zip = 'coco128.zip'
+        
+        print(f"Downloading {selected_dataset} dataset...")
+        try:
+            urllib.request.urlretrieve(dataset_url, dataset_zip)
+            print(f"✓ Downloaded {dataset_zip}")
             
-            # Create corresponding label
-            label_path = f'Thesis/dataset/labels/{split}/sample_{i:03d}.txt'
-            with open(label_path, 'w') as f:
-                # Sample annotation: class_id x_center y_center width height
-                f.write(f"{np.random.randint(0, 2)} {np.random.uniform(0.2, 0.8)} {np.random.uniform(0.2, 0.8)} {np.random.uniform(0.1, 0.3)} {np.random.uniform(0.1, 0.3)}\n")
+            # Extract dataset
+            with zipfile.ZipFile(dataset_zip, 'r') as zip_ref:
+                zip_ref.extractall('.')
+            print("✓ Extracted dataset")
+            
+            # Clean up zip file
+            os.remove(dataset_zip)
+            
+            # Create updated data.yaml for COCO128
+            coco128_config = {
+                'train': 'coco128/images/train2017',
+                'val': 'coco128/images/train2017',  # COCO128 uses same images for train/val
+                'nc': 80,
+                'names': [
+                    'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
+                    'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat',
+                    'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack',
+                    'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+                    'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket',
+                    'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
+                    'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+                    'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop',
+                    'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
+                    'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
+                ]
+            }
+            
+            # Write updated data.yaml
+            with open('Thesis/dataset/data.yaml', 'w') as f:
+                yaml.dump(coco128_config, f, default_flow_style=False)
+            
+            print("✓ Created COCO128 dataset configuration")
+            return 'Thesis/dataset/data.yaml'
+            
+        except Exception as e:
+            print(f"✗ Failed to download COCO128: {e}")
+            return None
     
-    print("✓ Sample dataset created")
+    else:
+        # For other datasets, use built-in YOLOv5 configurations
+        selected_config = available_datasets[selected_dataset]
+        
+        # Update our data.yaml to point to the built-in dataset
+        builtin_config = {
+            'train': f'../{selected_config["yaml"]}',  # Will use YOLOv5's built-in config
+            'val': f'../{selected_config["yaml"]}',
+            'nc': selected_config['nc'],
+            'names': [f'class_{i}' for i in range(selected_config['nc'])]  # Generic class names
+        }
+        
+        with open('Thesis/dataset/data.yaml', 'w') as f:
+            yaml.dump(builtin_config, f, default_flow_style=False)
+            
+        print(f"✓ Configured to use {selected_dataset} dataset")
+        return 'Thesis/dataset/data.yaml'
 
 # ==========================================
 # 4. TRAINING CONFIGURATION
 # ==========================================
 
 class YOLOv5Trainer:
-    def __init__(self, data_yaml_path):
+    def __init__(self, data_yaml_path, use_preexisting=False):
         self.data_yaml_path = data_yaml_path
+        self.use_preexisting = use_preexisting
         self.model_size = 'yolov5s'
         self.img_size = 640
         self.batch_size = 16
-        self.epochs = 100
+        self.epochs = 100 if not use_preexisting else 50  # Fewer epochs for preexisting datasets
         self.project = 'Thesis/training_results'
         self.name = 'yolov5s_training'
         
     def train_model(self):
         """Train YOLOv5s model"""
-        print("Starting YOLOv5s training...")
+        if self.use_preexisting:
+            print("Starting YOLOv5s training with preexisting dataset...")
+        else:
+            print("Starting YOLOv5s training with custom dataset...")
         
         # Change to YOLOv5 directory
         os.chdir('yolov5')
         
+        # For preexisting datasets, we might use different data path
+        if self.use_preexisting and 'coco128' in self.data_yaml_path:
+            data_path = '../coco128.yaml'  # Use the extracted COCO128 dataset
+            # Create coco128.yaml in the parent directory
+            coco128_yaml = {
+                'train': 'coco128/images/train2017',
+                'val': 'coco128/images/train2017',
+                'nc': 80,
+                'names': [
+                    'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
+                    'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat',
+                    'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack',
+                    'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+                    'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket',
+                    'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
+                    'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+                    'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop',
+                    'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
+                    'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
+                ]
+            }
+            with open('../coco128.yaml', 'w') as f:
+                yaml.dump(coco128_yaml, f, default_flow_style=False)
+        else:
+            data_path = f'../{self.data_yaml_path}'
+        
         # Training command
         train_cmd = [
             sys.executable, 'train.py',
-            '--data', f'../{self.data_yaml_path}',
+            '--data', data_path,
             '--weights', f'{self.model_size}.pt',
             '--img', str(self.img_size),
             '--batch-size', str(self.batch_size),
@@ -214,13 +316,17 @@ class YOLOv5Trainer:
             '--cache'
         ]
         
+        # Add additional parameters for preexisting datasets
+        if self.use_preexisting:
+            train_cmd.extend(['--patience', '20'])  # Early stopping
+        
         try:
             print(f"Training command: {' '.join(train_cmd)}")
             result = subprocess.run(train_cmd, capture_output=True, text=True)
             
             if result.returncode == 0:
                 print("✓ Training completed successfully")
-                print("Training output:", result.stdout)
+                print("Training output:", result.stdout[-1000:])  # Show last 1000 chars
             else:
                 print("✗ Training failed")
                 print("Error:", result.stderr)
