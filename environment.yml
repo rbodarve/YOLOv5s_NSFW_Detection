@@ -1,8 +1,8 @@
 name: THESIS
 channels:
-  - pytorch
-  - conda-forge
   - defaults
+  - conda-forge
+  - pytorch
   - nvidia
   - https://repo.anaconda.com/pkgs/main
   - https://repo.anaconda.com/pkgs/r
@@ -29,7 +29,6 @@ dependencies:
   - certifi=2025.4.26
   - cffi=1.17.1
   - charset-normalizer=3.3.2
-  - clearml=1.17.2
   - click=8.1.8
   - colorama=0.4.6
   - comm=0.2.1
@@ -178,12 +177,6 @@ dependencies:
   - sqlite=3.45.3
   - stack_data=0.2.0
   - tbb=2021.8.0
-  - tensorboard=2.10.0
-  - tensorboard-data-server=0.6.1
-  - tensorboard-plugin-wit=1.8.1
-  - tensorflow=2.10.0
-  - tensorflow-base=2.10.0
-  - tensorflow-estimator=2.10.0
   - termcolor=2.1.0
   - tifffile=2025.2.18
   - tk=8.6.14
@@ -223,5 +216,10 @@ dependencies:
       - albumentations==1.4.23
       - wandb==0.19.1
       - thop==0.1.1-2209072238
-      - clearml==1.18.4
-prefix: C:\Users\USER\miniconda3\envs\CCDEPLRL_PROJECT
+      - clearml
+      - tensorboard==2.10.0
+      - tensorboard-data-server==0.6.1
+      - tensorboard-plugin-wit==1.8.1
+      - tensorflow-gpu==2.10.0
+      - tensorflow-estimator==2.10.0
+prefix: C:\Users\USER\miniconda3\envs\THESIS
