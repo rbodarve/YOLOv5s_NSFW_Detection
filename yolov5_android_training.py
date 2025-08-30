@@ -758,7 +758,6 @@ def check_system_requirements():
         print("Warning: Python 3.10 is recommended")
 
     try:
-        import torch
 
         print(f"PyTorch version: {torch.__version__}")
         print(f"CUDA available: {torch.cuda.is_available()}")
