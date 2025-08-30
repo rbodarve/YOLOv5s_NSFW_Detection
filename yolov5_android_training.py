@@ -15,7 +15,7 @@ import seaborn as sns
 
 
 def install_dependencies():
-    print("Installing dependencies...")
+    print("Installing dependencies")
 
     packages = [
         "opencv-python",
@@ -34,40 +34,40 @@ def install_dependencies():
     for package in packages:
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-            print(f"✓ Installed {package}")
+            print(f"Installed {package}")
         except subprocess.CalledProcessError:
-            print(f"✗ Failed to install {package}")
+            print(f"Failed to install {package}")
 
 
 def clone_yolov5_repo():
-    print("Cloning YOLOv5 repository...")
+    print("Cloning YOLOv5 repository")
 
     if not os.path.exists("yolov5"):
         try:
             subprocess.check_call(
                 ["git", "clone", "https://github.com/ultralytics/yolov5.git"]
             )
-            print("✓ YOLOv5 repository cloned successfully")
+            print("YOLOv5 repository cloned successfully")
         except subprocess.CalledProcessError:
-            print("✗ Failed to clone YOLOv5 repository")
+            print("Failed to clone YOLOv5 repository")
             return False
     else:
-        print("✓ YOLOv5 repository already exists")
+        print("YOLOv5 repository already exists")
 
     try:
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", "-r", "yolov5/requirements.txt"]
         )
-        print("✓ YOLOv5 requirements installed")
+        print("YOLOv5 requirements installed")
     except subprocess.CalledProcessError:
-        print("✗ Failed to install YOLOv5 requirements")
+        print("Failed to install YOLOv5 requirements")
         return False
 
     return True
 
 
 def create_folder_structure():
-    print("Creating folder structure...")
+    print("Creating folder structure")
 
     folders = [
         "Thesis/dataset/images/train",
@@ -82,13 +82,13 @@ def create_folder_structure():
 
     for folder in folders:
         Path(folder).mkdir(parents=True, exist_ok=True)
-        print(f"✓ Created {folder}")
+        print(f"Created {folder}")
 
-    print("✓ Folder structure created successfully")
+    print("Folder structure created successfully")
 
 
 def create_dataset_yaml():
-    print("Creating dataset configuration...")
+    print("Creating dataset configuration")
 
     dataset_config = {
         "train": "Thesis/dataset/images/train",
@@ -100,12 +100,12 @@ def create_dataset_yaml():
     with open("Thesis/dataset/data.yaml", "w") as f:
         yaml.dump(dataset_config, f, default_flow_style=False)
 
-    print("✓ Dataset configuration file created")
+    print("Dataset configuration file created")
     return "Thesis/dataset/data.yaml"
 
 
 def validate_dataset_structure():
-    print("Validating dataset structure...")
+    print("Validating dataset structure")
 
     required_paths = [
         "Thesis/dataset/images/train",
@@ -117,10 +117,10 @@ def validate_dataset_structure():
 
     for path in required_paths:
         if not os.path.exists(path):
-            print(f"✗ Missing: {path}")
+            print(f"Missing: {path}")
             return False
         else:
-            print(f"✓ Found: {path}")
+            print(f"Found: {path}")
 
     train_images = len(
         [
@@ -147,7 +147,7 @@ def validate_dataset_structure():
     print(f"Validation images: {val_images}, Validation labels: {val_labels}")
 
     if train_images == 0 or val_images == 0:
-        print("⚠️ Warning: No images found in dataset folders")
+        print("Warning: No images found in dataset folders")
         print("Will use preexisting YOLOv5 dataset for training")
         return False
 
@@ -155,7 +155,7 @@ def validate_dataset_structure():
 
 
 def setup_preexisting_dataset():
-    print("Setting up preexisting YOLOv5 dataset...")
+    print("Setting up preexisting YOLOv5 dataset")
 
     available_datasets = {
         "coco128": {
@@ -188,14 +188,14 @@ def setup_preexisting_dataset():
         dataset_url = available_datasets[selected_dataset]["url"]
         dataset_zip = "coco128.zip"
 
-        print(f"Downloading {selected_dataset} dataset...")
+        print(f"Downloading {selected_dataset} dataset")
         try:
             urllib.request.urlretrieve(dataset_url, dataset_zip)
-            print(f"✓ Downloaded {dataset_zip}")
+            print(f"Downloaded {dataset_zip}")
 
             with zipfile.ZipFile(dataset_zip, "r") as zip_ref:
                 zip_ref.extractall(".")
-            print("✓ Extracted dataset")
+            print("Extracted dataset")
 
             os.remove(dataset_zip)
 
@@ -290,11 +290,11 @@ def setup_preexisting_dataset():
             with open("Thesis/dataset/data.yaml", "w") as f:
                 yaml.dump(coco128_config, f, default_flow_style=False)
 
-            print("✓ Created COCO128 dataset configuration")
+            print("Created COCO128 dataset configuration")
             return "Thesis/dataset/data.yaml"
 
         except Exception as e:
-            print(f"✗ Failed to download COCO128: {e}")
+            print(f"Failed to download COCO128: {e}")
             return None
 
     else:
@@ -310,7 +310,7 @@ def setup_preexisting_dataset():
         with open("Thesis/dataset/data.yaml", "w") as f:
             yaml.dump(builtin_config, f, default_flow_style=False)
 
-        print(f"✓ Configured to use {selected_dataset} dataset")
+        print(f"Configured to use {selected_dataset} dataset")
         return "Thesis/dataset/data.yaml"
 
 
@@ -326,11 +326,10 @@ class YOLOv5Trainer:
         self.name = "yolov5s_training"
 
     def train_model(self):
-        """Train YOLOv5s model"""
         if self.use_preexisting:
-            print("Starting YOLOv5s training with preexisting dataset...")
+            print("Starting YOLOv5s training with preexisting dataset")
         else:
-            print("Starting YOLOv5s training with custom dataset...")
+            print("Starting YOLOv5s training with custom dataset")
 
         os.chdir("yolov5")
 
@@ -458,15 +457,15 @@ class YOLOv5Trainer:
             result = subprocess.run(train_cmd, capture_output=True, text=True)
 
             if result.returncode == 0:
-                print("✓ Training completed successfully")
+                print("Training completed successfully")
                 print("Training output:", result.stdout[-1000:])
             else:
-                print("✗ Training failed")
+                print("Training failed")
                 print("Error:", result.stderr)
                 return False
 
         except Exception as e:
-            print(f"✗ Training failed with exception: {e}")
+            print(f"Training failed with exception: {e}")
             return False
         finally:
             os.chdir("..")
@@ -478,12 +477,12 @@ class YOLOv5Trainer:
         if os.path.exists(weights_path):
             return weights_path
         else:
-            print(f"✗ Best weights not found at {weights_path}")
+            print(f"Best weights not found at {weights_path}")
             return None
 
 
 def validate_model(weights_path, data_yaml_path):
-    print("Validating trained model...")
+    print("Validating trained model")
 
     os.chdir("yolov5")
 
@@ -511,15 +510,15 @@ def validate_model(weights_path, data_yaml_path):
         result = subprocess.run(val_cmd, capture_output=True, text=True)
 
         if result.returncode == 0:
-            print("✓ Validation completed successfully")
+            print("Validation completed successfully")
             print("Validation output:", result.stdout)
         else:
-            print("✗ Validation failed")
+            print("Validation failed")
             print("Error:", result.stderr)
             return False
 
     except Exception as e:
-        print(f"✗ Validation failed with exception: {e}")
+        print(f"Validation failed with exception: {e}")
         return False
     finally:
         os.chdir("..")
@@ -533,7 +532,7 @@ class ModelExporter:
         self.models_dir = "Thesis/models"
 
     def export_to_onnx(self):
-        print("Exporting model to ONNX...")
+        print("Exporting model to ONNX")
 
         os.chdir("yolov5")
 
@@ -557,31 +556,48 @@ class ModelExporter:
             result = subprocess.run(onnx_cmd, capture_output=True, text=True)
 
             if result.returncode == 0:
-                print("✓ ONNX export completed successfully")
+                print("ONNX export completed successfully")
 
-                onnx_source = self.weights_path.replace(".pt", ".onnx")
                 onnx_dest = f"{self.models_dir}/yolov5s_model.onnx"
 
-                if os.path.exists(onnx_source):
+                # Possible export locations
+                possible_paths = [
+                    self.weights_path.replace(".pt", ".onnx"),
+                    os.path.join("yolov5", "best.onnx"),
+                    os.path.join(
+                        "yolov5",
+                        f"{os.path.basename(self.weights_path).replace('.pt','.onnx')}",
+                    ),
+                    "yolov5s.onnx",
+                ]
+
+                onnx_source = None
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        onnx_source = path
+                        break
+
+                if onnx_source:
                     shutil.move(onnx_source, onnx_dest)
-                    print(f"✓ ONNX model saved to {onnx_dest}")
+                    print(f"ONNX model saved to {onnx_dest}")
                     return onnx_dest
                 else:
-                    print("✗ ONNX file not found after export")
+                    print("ONNX file not found after export")
                     return None
+
             else:
-                print("✗ ONNX export failed")
+                print("ONNX export failed")
                 print("Error:", result.stderr)
                 return None
 
         except Exception as e:
-            print(f"✗ ONNX export failed with exception: {e}")
+            print(f"ONNX export failed with exception: {e}")
             return None
         finally:
             os.chdir("..")
 
     def export_to_tflite(self):
-        print("Exporting model to TensorFlow Lite...")
+        print("Exporting model to TensorFlow Lite")
 
         os.chdir("yolov5")
 
@@ -604,100 +620,115 @@ class ModelExporter:
             result = subprocess.run(tflite_cmd, capture_output=True, text=True)
 
             if result.returncode == 0:
-                print("✓ TensorFlow Lite export completed successfully")
+                print("TensorFlow Lite export completed successfully")
 
-                tflite_source = self.weights_path.replace(".pt", ".tflite")
                 tflite_dest = f"{self.models_dir}/yolov5s_model.tflite"
 
-                if os.path.exists(tflite_source):
+                possible_paths = [
+                    self.weights_path.replace(".pt", ".tflite"),
+                    os.path.join("yolov5", "best.tflite"),
+                    os.path.join(
+                        "yolov5",
+                        f"{os.path.basename(self.weights_path).replace('.pt','.tflite')}",
+                    ),
+                    "yolov5s.tflite",
+                ]
+
+                tflite_source = None
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        tflite_source = path
+                        break
+
+                if tflite_source:
                     shutil.move(tflite_source, tflite_dest)
-                    print(f"✓ TensorFlow Lite model saved to {tflite_dest}")
+                    print(f"TensorFlow Lite model saved to {tflite_dest}")
                     return tflite_dest
                 else:
-                    print("✗ TensorFlow Lite file not found after export")
+                    print("TensorFlow Lite file not found after export")
                     return None
+
             else:
-                print("✗ TensorFlow Lite export failed")
+                print("TensorFlow Lite export failed")
                 print("Error:", result.stderr)
                 return None
 
         except Exception as e:
-            print(f"✗ TensorFlow Lite export failed with exception: {e}")
+            print(f"TensorFlow Lite export failed with exception: {e}")
             return None
         finally:
             os.chdir("..")
 
 
 def main():
-    print("YOLOv5s Android Real-Time Detection Training Pipeline")
+    print("YOLOv5s Android Real-Time Detection Training")
 
     try:
-        print("\n### Step 1: Installing Dependencies ###")
+        print("\nInstalling Dependencies")
         install_dependencies()
 
         if not clone_yolov5_repo():
-            print("Failed to clone YOLOv5 repository. Exiting...")
+            print("Failed to clone YOLOv5 repository. Exit")
             return
 
-        print("\n### Step 2: Setting Up Folder Structure ###")
+        print("\nSetting Up Folder Structure")
         create_folder_structure()
         data_yaml_path = create_dataset_yaml()
 
-        print("\n### Step 3: Preparing Dataset ###")
+        print("\n Preparing Dataset")
 
         if not validate_dataset_structure():
-            print("Dataset validation failed. Please check your dataset.")
-            return
+            print("No valid dataset found. Falling back to COCO128 demo dataset")
+            data_yaml_path = setup_preexisting_dataset()
+            if not data_yaml_path:
+                print("Failed to set up fallback dataset. Exiting")
+                return
 
-        print("\n### Step 4: Training YOLOv5s Model ###")
-        trainer = YOLOv5Trainer(data_yaml_path)
+        print("\nTraining YOLOv5s Model")
+        trainer = YOLOv5Trainer(data_yaml_path, use_preexisting=True)
 
         if not trainer.train_model():
-            print("Training failed. Exiting...")
+            print("Training failed. Exit")
             return
 
         best_weights = trainer.get_best_weights_path()
         if not best_weights:
-            print("Could not find trained weights. Exiting...")
+            print("Could not find trained weights. Exit")
             return
 
-        print(f"✓ Best weights saved at: {best_weights}")
+        print(f"Best weights saved at: {best_weights}")
 
-        print("\n### Step 5: Validating Model ###")
+        print("\nValidating Model")
         if not validate_model(best_weights, data_yaml_path):
-            print("Validation failed, but continuing with export...")
+            print("Validation failed, but continuing with export")
 
-        print("\n### Step 6: Exporting Model for Android ###")
+        print("\nExporting Model for Android")
         exporter = ModelExporter(best_weights)
 
         onnx_path = exporter.export_to_onnx()
         tflite_path = exporter.export_to_tflite()
 
-        print("\n" + "=" * 60)
         print("TRAINING PIPELINE COMPLETED")
-        print("=" * 60)
 
-        print("\n📁 Final Exported Files:")
+        print("\nFinal Exported Files:")
         if onnx_path and os.path.exists(onnx_path):
-            print(f"✓ ONNX Model: {os.path.abspath(onnx_path)}")
+            print(f"ONNX Model: {os.path.abspath(onnx_path)}")
         else:
-            print("✗ ONNX export failed")
+            print("ONNX export failed")
 
         if tflite_path and os.path.exists(tflite_path):
-            print(f"✓ TensorFlow Lite Model: {os.path.abspath(tflite_path)}")
+            print(f"TensorFlow Lite Model: {os.path.abspath(tflite_path)}")
         else:
-            print("✗ TensorFlow Lite export failed")
+            print("TensorFlow Lite export failed")
 
+        print(f"\nTraining Results: {os.path.abspath(trainer.project)}/{trainer.name}")
         print(
-            f"\n📊 Training Results: {os.path.abspath(trainer.project)}/{trainer.name}"
-        )
-        print(
-            f"📈 Validation Metrics: {os.path.abspath('Thesis/metrics/validation_results')}"
+            f"Validation Metrics: {os.path.abspath('Thesis/metrics/validation_results')}"
         )
 
-        print("\n🚀 Models are ready for Android deployment!")
+        print("\nModels are ready for Android deployment")
 
-        print("\n📂 Complete Project Structure:")
+        print("\nComplete Project Structure:")
         for root, dirs, files in os.walk("Thesis"):
             level = root.replace("Thesis", "").count(os.sep)
             indent = " " * 2 * level
@@ -709,12 +740,10 @@ def main():
                 print(f"{subindent}... and {len(files) - 5} more files")
 
     except Exception as e:
-        print(f"\n✗ Pipeline failed with error: {e}")
+        print(f"\nPipeline failed with error: {e}")
         import traceback
 
         traceback.print_exc()
-
-    print("\n" + "=" * 60)
 
 
 def check_system_requirements():
@@ -725,8 +754,8 @@ def check_system_requirements():
         f"Python version: {python_version.major}.{python_version.minor}.{python_version.micro}"
     )
 
-    if python_version.major != 3 or python_version.minor != 12:
-        print("⚠️ Warning: Python 3.12 is recommended")
+    if python_version.major != 3 or python_version.minor != 10:
+        print("Warning: Python 3.10 is recommended")
 
     try:
         import torch
@@ -745,7 +774,7 @@ def check_system_requirements():
     print(f"Available disk space: {free // (2**30)} GB")
 
     if free < 5 * (2**30):
-        print("⚠️ Warning: Low disk space. Training requires at least 5GB free space")
+        print("Warning: Low disk space. Training requires at least 5GB free space")
 
 
 def create_training_config():
@@ -773,7 +802,7 @@ def create_training_config():
     with open("Thesis/training_config.yaml", "w") as f:
         yaml.dump(config, f, default_flow_style=False)
 
-    print("✓ Training configuration saved to Thesis/training_config.yaml")
+    print("Training configuration saved to Thesis/training_config.yaml")
 
 
 if __name__ == "__main__":
