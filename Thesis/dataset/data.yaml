@@ -80,5 +80,5 @@ names:
 - hair drier
 - toothbrush
 nc: 80
-train: coco128/images/train2017
-val: coco128/images/train2017
+train: ../coco128/images/train2017
+val: ../coco128/images/train2017
