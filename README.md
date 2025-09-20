@@ -1,6 +1,6 @@
 # YOLOv5 Android Real-Time Detection
 
-A comprehensive Python implementation for training YOLOv5 models and exporting them for Android deployment. This project provides an end-to-end pipeline from dataset preparation to model export, with built-in support for training on custom datasets or using preexisting datasets like COCO128.
+A sample Python implementation for training YOLOv5 models and exporting them for Android deployment. This implementation provides an end-to-end pipeline from dataset preparation to model export, with built-in support for training on custom datasets or using preexisting datasets like COCO128.
 
 ## Features
 
@@ -54,7 +54,7 @@ Thesis/
 Simply run the script to start the complete training pipeline:
 
 ```python
-python yolov5s.py
+python yolov5s.ipynb
 ```
 
 The script will automatically:
