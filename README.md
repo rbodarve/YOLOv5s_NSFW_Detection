@@ -1,6 +1,6 @@
 # YOLOv5 Model Conversion for Android Detection of NSFW in Real Time
 
-A sample Python implementation for training YOLOv5 models and exporting them for Android deployment. This implementation provides an end-to-end pipeline from dataset preparation to model export, with built-in support for training on custom datasets or using preexisting datasets like COCO128.
+A sample Jupyter notebook implementation for training YOLOv5 models and exporting them for Android deployment. This implementation provides an end-to-end pipeline from dataset preparation to model export, with built-in support for training on custom datasets or using preexisting datasets like COCO128.
 
 ## Features
 
